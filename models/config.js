@@ -1,28 +1,20 @@
 const mongoose = require("mongoose");
+require("dotenv").config(); // Load environment variables
 
-const MONGO_URI = process.env.MONGODB_URI;
+const mongoURI = process.env.MONGO_URI;
 
-if (!MONGO_URI) {
+if (!mongoURI) {
     console.error("❌ ERROR: MongoDB URI is not defined in environment variables!");
-    process.exit(1); // Stop the app if the URI is missing
+    process.exit(1); // Stop execution
 }
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(mongoURI) // Removed deprecated options
     .then(() => console.log("✅ MongoDB Connected Successfully"))
-    .catch((err) => {
-        console.error("❌ MongoDB Connection Error:", err);
-        process.exit(1); // Stop the app if the connection fails
-    });
+    .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
 const LoginSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    }
+    name: { type: String, required: true },
+    password: { type: String, required: true }
 });
 
 const collection = mongoose.model("users", LoginSchema);
