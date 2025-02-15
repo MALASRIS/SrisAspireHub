@@ -7,7 +7,6 @@ const collection = require("./models/config");
 dotenv.config(); // Load .env variables
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
@@ -72,12 +71,13 @@ app.post('/login', async (req, res) => {
 app.use(express.static("public"));
 app.use(express.static('views/assets'));
 
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
 // 404 Page
 app.use((req, res) => {
     res.status(404).sendFile("./views/404.html", { root: __dirname });
-});
-
-// Start Server
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
