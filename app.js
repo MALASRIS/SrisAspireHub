@@ -83,9 +83,9 @@ app.post('/login',async (req ,res)=>{
 
 app.use(express.static("public"));
 app.use(express.static('views/assets'));
-app.listen(PORT, () => {
-    console.log(`Port listening on ${PORT}`);
-});
+const Port = process.env.Port || 3000;
+app.listen(Port, () => console.log(`Server running on port ${Port}`));
+
 
 app.use((req, res) => {
     res.sendFile("./views/404.html", { root: __dirname });
