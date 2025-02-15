@@ -35,21 +35,30 @@ app.get("/about", (req, res) => res.render("containers/about", { title: "About" 
 app.get("/hscGuidance", (req, res) => res.render("containers/hscGuidance", { title: "Career Guidance" }));
 app.get("/sslcGuidance", (req, res) => res.render("containers/sslcGuidance", { title: "Career Guidance" }));
 app.get("/resource", (req, res) => res.render("containers/resource", { title: "Resources" }));
-
 // Signup Route
 app.post('/signup', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        let { username, password } = req.body;
 
+        // Validate Input
+        if (!username || !password) {
+            return res.send("<script>alert('Username and password are required'); window.location.href='/signup'</script>");
+        }
+
+        // Ensure password is a string
+        password = String(password);
+
+        // Check if user already exists
         const existingUser = await collection.findOne({ name: username });
         if (existingUser) {
             return res.send("<script>alert('Username already exists'); window.location.href='/signup'</script>");
         }
 
-        // Hash password and save user
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const userData = new collection({ name: username, password: hashedPassword });
 
+        // Create and save user
+        const userData = new collection({ name: username, password: hashedPassword });
         await userData.save();
 
         console.log("✅ User Created:", userData);
