@@ -4,9 +4,9 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const path = require("path");
 
-dotenv.config(); 
+dotenv.config();
 
-const collection = require("./models/config"); 
+const collection = require("./models/config");
 
 const app = express();
 
@@ -35,6 +35,7 @@ app.get("/about", (req, res) => res.render("containers/about", { title: "About" 
 app.get("/hscGuidance", (req, res) => res.render("containers/hscGuidance", { title: "Career Guidance" }));
 app.get("/sslcGuidance", (req, res) => res.render("containers/sslcGuidance", { title: "Career Guidance" }));
 app.get("/resource", (req, res) => res.render("containers/resource", { title: "Resources" }));
+
 // Signup Route
 app.post('/signup', async (req, res) => {
     try {
@@ -45,19 +46,20 @@ app.post('/signup', async (req, res) => {
             return res.send("<script>alert('Username and password are required'); window.location.href='/signup'</script>");
         }
 
-        // Ensure password is a string
-        password = String(password);
+        username = username.trim(); // Remove leading/trailing spaces
+        password = String(password).trim();
 
-        // Check if user already exists
+        if (password.length < 6) {
+            return res.send("<script>alert('Password must be at least 6 characters'); window.location.href='/signup'</script>");
+        }
+
         const existingUser = await collection.findOne({ name: username });
         if (existingUser) {
             return res.send("<script>alert('Username already exists'); window.location.href='/signup'</script>");
         }
 
-        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create and save user
         const userData = new collection({ name: username, password: hashedPassword });
         await userData.save();
 
@@ -65,7 +67,7 @@ app.post('/signup', async (req, res) => {
         res.send("<script>alert('Signed up successfully'); window.location.href='/login'</script>");
     } catch (error) {
         console.error("❌ Signup Error:", error.message);
-        res.status(500).send("<script>alert('Signup failed: " + error.message + "'); window.location.href='/signup'</script>");
+        res.status(500).send(`<script>alert('Signup failed: ${escape(error.message)}'); window.location.href='/signup'</script>`);
     }
 });
 
@@ -73,6 +75,11 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.send("<script>alert('Username and password are required'); window.location.href='/'</script>");
+        }
+
         const user = await collection.findOne({ name: username });
 
         if (!user) {
@@ -81,17 +88,18 @@ app.post('/login', async (req, res) => {
 
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         if (isPasswordMatch) {
+            console.log("✅ Login successful for user:", username);
             return res.redirect("/ejshome");
         } else {
             return res.send("<script>alert('Wrong Password'); window.location.href='/'</script>");
         }
     } catch (error) {
         console.error("❌ Login Error:", error.message);
-        return res.send("<script>alert('Something went wrong: " + error.message + "'); window.location.href='/'</script>");
+        return res.send(`<script>alert('Something went wrong: ${escape(error.message)}'); window.location.href='/'</script>`);
     }
 });
 
-// Static Files
+// Serve Static Files
 app.use(express.static("public"));
 app.use(express.static(path.join(__dirname, "views/assets")));
 
@@ -101,6 +109,7 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
 
+// 404 Page Handler
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
 });
