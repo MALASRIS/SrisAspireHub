@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs");
 const collection = require("./models/config");
 const app = express();
-const PORT = 3000;
 
 //mongoDb
 app.use(express.json())
@@ -88,6 +87,12 @@ app.use(express.static("public"));
 app.use(express.static('views/assets'));
 app.listen(PORT, () => {
     console.log(`Port listening on ${PORT}`);
+});
+
+const port = process.env.port|| 3000;
+
+app.listen(port, "0.0.0.0", function () {
+    console.log(`Port listening on ${port}`);
 });
 app.use((req, res) => {
     res.sendFile("./views/404.html", { root: __dirname });
