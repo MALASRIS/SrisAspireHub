@@ -25,26 +25,30 @@ app.get("/sslcGuidance", (req, res) => res.render("containers/sslcGuidance", { t
 app.get("/resource", (req, res) => res.render("containers/resource", { title: "Resources" }));
 
 // Signup Route
-app.post('/signup', async (req, res) => {
+app.post("/signup", async (req, res) => {
     try {
-        const { username, password } = req.body;
-
-        const existingUser = await collection.findOne({ name: username });
-        if (existingUser) {
-            return res.send("<script>alert('Username already exists'); window.location.href='/signup'</script>");
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const userData = await collection.create({ name: username, password: hashedPassword });
-
-        console.log("User Created:", userData);
-        res.send("<script>alert('Signed up successfully'); window.location.href='/login'</script>");
+      const { username, email, password } = req.body;
+  
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
+  
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({ username, email, password: hashedPassword });
+  
+      await newUser.save();
+      res.status(201).json({ message: "Signup successful", user: newUser });
     } catch (error) {
-        console.error("Signup Error:", error);
-        res.status(500).send("<script>alert('Signup failed'); window.location.href='/signup'</script>");
+      console.error("Signup Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
-});
-
+  });
+  
 // Login Route
 app.post('/login', async (req, res) => {
     try {
