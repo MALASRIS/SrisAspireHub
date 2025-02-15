@@ -1,99 +1,83 @@
 const express = require("express");
-const path = require("path");
-const mongoose = require('mongoose');
-
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const collection = require("./models/config");
+
+dotenv.config(); // Load .env variables
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-//mongoDb
-app.use(express.json())
+// Middleware
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 app.set("view engine", "ejs");
 
-app.get("/ejshome", (req, res) => {
-    res.render("containers/ejshome", { title: "Home" });
-});
+// Routes
+app.get("/", (req, res) => res.render("containers/login", { title: "Login" }));
+app.get("/login", (req, res) => res.redirect('/'));
+app.get("/signup", (req, res) => res.render("containers/signup", { title: "Signup" }));
+app.get("/ejshome", (req, res) => res.render("containers/ejshome", { title: "Home" }));
+app.get("/contact", (req, res) => res.render("containers/contact", { title: "Contact" }));
+app.get("/about", (req, res) => res.render("containers/about", { title: "About" }));
+app.get("/hscGuidance", (req, res) => res.render("containers/hscGuidance", { title: "Career Guidance" }));
+app.get("/sslcGuidance", (req, res) => res.render("containers/sslcGuidance", { title: "Career Guidance" }));
+app.get("/resource", (req, res) => res.render("containers/resource", { title: "Resources" }));
 
-app.get("/contact", (req, res) => {
-    res.render("containers/contact", { title: "Contact" });
-});
-
-app.get("/about", (req, res) => {
-    res.render("containers/about", { title: "About" });
-})
-app.get("/hscGuidance", (req, res) => {
-    res.render("containers/hscGuidance", { title: "CareerGuidance" });
-})
-
-app.get("/sslcGuidance", (req, res) => {
-    res.render("containers/sslcGuidance", { title: "CareerGuidance" });
-})
-
-app.get("/resource", (req, res) => {
-    res.render("containers/resource", { title: "Resources" });
-})
-
-app.get("/", (req, res) => {
-    res.render("containers/login", { title: "Login" });
-});
-app.get("/login", (req, res) => {
-    res.redirect('/');
-});
-
-app.get("/signup", (req, res) => {
-    res.render("containers/signup", { title: "Signup" });
-});
-
+// Signup Route
 app.post('/signup', async (req, res) => {
-    const data = {
-        name: req.body.username,
-        password: req.body.password
-    }
-    const existingUser = await collection.findOne({name:data.name})
-    if(existingUser){
-        res.send("<script>alert('username already exists'); window.location.href='/signup'</script>");
-    }
-    const saltRound=10;
-    const hashedPassword=await bcrypt.hash(data.password,saltRound);
-    data.password=hashedPassword;
-    const userData=await collection.insertMany(data);
-    res.send("<script>alert('Signed in successfully'); window.location.href='/login'</script>");
-    console.log(userData);
-})
+    try {
+        const { username, password } = req.body;
 
-app.post('/login',async (req ,res)=>{
-    try{
-        const check=await collection.findOne({name:req.body.username})
-        if(!check){
+        const existingUser = await collection.findOne({ name: username });
+        if (existingUser) {
+            return res.send("<script>alert('Username already exists'); window.location.href='/signup'</script>");
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const userData = await collection.create({ name: username, password: hashedPassword });
+
+        console.log("User Created:", userData);
+        res.send("<script>alert('Signed up successfully'); window.location.href='/login'</script>");
+    } catch (error) {
+        console.error("Signup Error:", error);
+        res.status(500).send("<script>alert('Signup failed'); window.location.href='/signup'</script>");
+    }
+});
+
+// Login Route
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await collection.findOne({ name: username });
+
+        if (!user) {
             return res.send("<script>alert('Username not found'); window.location.href='/'</script>");
         }
-        const isPasswordMatch=await bcrypt.compare(req.body.password,check.password)
-        if(isPasswordMatch){
+
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (isPasswordMatch) {
             return res.redirect("/ejshome");
-        }else{
-            return res.send("<script>alert('wrong Password'); window.location.href='/'</script>");
+        } else {
+            return res.send("<script>alert('Wrong Password'); window.location.href='/'</script>");
         }
-        
-    }catch{
-         return res.send("<script>alert('wrong Details'); window.location.href='/'</script>");
+    } catch (error) {
+        console.error("Login Error:", error);
+        return res.send("<script>alert('Something went wrong'); window.location.href='/'</script>");
     }
-})
+});
 
-
-
+// Static Files
 app.use(express.static("public"));
 app.use(express.static('views/assets'));
-app.listen(PORT, () => {
-    console.log(`Port listening on ${PORT}`);
-});
 
-const port = process.env.port|| 3000;
-
-app.listen(port, "0.0.0.0", function () {
-    console.log(`Port listening on ${port}`);
-});
+// 404 Page
 app.use((req, res) => {
-    res.sendFile("./views/404.html", { root: __dirname });
-  });
+    res.status(404).sendFile("./views/404.html", { root: __dirname });
+});
+
+// Start Server
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
