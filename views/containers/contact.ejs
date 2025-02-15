@@ -73,33 +73,32 @@
             </div>
         </div>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                emailjs.init("UmaDeupHmxUmDWaXj"); // Replace with your EmailJS public key
-
-                document.getElementById("contact-form").addEventListener("submit", function (event) {
-                    event.preventDefault();
-
-                    let formData = {
-                        firstname: document.getElementById("firstname").value,
-                        lastname: document.getElementById("lastname").value,
-                        email: document.getElementById("email").value,
-                        phone: document.getElementById("phone").value,
-                        city: document.getElementById("city").value
-                    };
-
-                    emailjs.send("service_00yes7y", "template_fl4u9sa", formData)
-                        .then(function (response) {
-                            alert("Message sent successfully!");
-                            document.getElementById("contact-form").reset();
-                        })
-                        .catch(function (error) {
-                            alert("Failed to send message. Please try again.");
-                            console.error("Error:", error);
-                        });
-                });
+        <script>document.addEventListener("DOMContentLoaded", function () {
+            emailjs.init("9sJkEisVC2slNWTIq"); // Replace with your actual EmailJS public key
+        
+            document.getElementById("contact-form").addEventListener("submit", function (event) {
+                event.preventDefault();
+        
+                let formData = {
+                    firstname: document.getElementById("firstname").value,
+                    lastname: document.getElementById("lastname").value,
+                    email: document.getElementById("email").value,
+                    phone: document.getElementById("phone").value,
+                    city: document.getElementById("city").value
+                };
+        
+                emailjs.send("service_y0y7rn8", "template_r7d6y8k", formData)
+                    .then(function (response) {
+                        alert("Message sent successfully!");
+                        document.getElementById("contact-form").reset();
+                    })
+                    .catch(function (error) {
+                        alert("Failed to send message. Please try again.");
+                        console.error("Error:", error);
+                    });
             });
-
+        });
+        
         </script>
         <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
         <%- include('../partials/footer.ejs') %>
