@@ -1,10 +1,13 @@
 const express = require("express");
 const path = require("path");
-const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
+
+const bcrypt = require("bcryptjs");
 const collection = require("./models/config");
 const app = express();
 const PORT = 3000;
 
+//mongoDb
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }));
 
@@ -57,8 +60,8 @@ app.post('/signup', async (req, res) => {
     const hashedPassword=await bcrypt.hash(data.password,saltRound);
     data.password=hashedPassword;
     const userData=await collection.insertMany(data);
-    console.log(userData);
     res.send("<script>alert('Signed in successfully'); window.location.href='/login'</script>");
+    console.log(userData);
 })
 
 app.post('/login',async (req ,res)=>{
@@ -80,13 +83,12 @@ app.post('/login',async (req ,res)=>{
 })
 
 
+
 app.use(express.static("public"));
 app.use(express.static('views/assets'));
 app.listen(PORT, () => {
-    console.log(`App listening on ${PORT}`);
+    console.log(`Port listening on ${PORT}`);
 });
-
 app.use((req, res) => {
     res.sendFile("./views/404.html", { root: __dirname });
   });
-  

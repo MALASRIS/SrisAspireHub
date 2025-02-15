@@ -205,7 +205,7 @@ body {
         flex-direction: column;
         height: auto;
         padding: 20px;
-        width: 95%;  
+         width: 95%;
     }
 
     .image-container {
@@ -219,7 +219,7 @@ body {
 
     .form-content {
         width: 100%;
-        max-width: 400px; 
+        max-width: 400px;  
     }
 
     .input-field input,
@@ -227,5 +227,5 @@ body {
         width: 100%;
         padding: 12px; 
         font-size: 16px; 
-    }
+}
 }
