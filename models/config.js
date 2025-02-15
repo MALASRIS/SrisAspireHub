@@ -1,8 +1,18 @@
 const mongoose = require("mongoose");
 
-const connect = mongoose.connect(process.env.MONGODB_URI)
+const MONGO_URI = process.env.MONGODB_URI;
+
+if (!MONGO_URI) {
+    console.error("❌ ERROR: MongoDB URI is not defined in environment variables!");
+    process.exit(1); // Stop the app if the URI is missing
+}
+
+mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ MongoDB Connected Successfully"))
-    .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+    .catch((err) => {
+        console.error("❌ MongoDB Connection Error:", err);
+        process.exit(1); // Stop the app if the connection fails
+    });
 
 const LoginSchema = new mongoose.Schema({
     name: {
