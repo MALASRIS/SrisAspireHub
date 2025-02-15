@@ -200,3 +200,32 @@ body {
         width: 100%;
     }
 }
+@media screen and (max-width: 698px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+        padding: 20px;
+        width: 95%;  
+    }
+
+    .image-container {
+        display: none;
+    }
+
+    .form-container {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .form-content {
+        width: 100%;
+        max-width: 400px; 
+    }
+
+    .input-field input,
+    .input-field select {
+        width: 100%;
+        padding: 12px; 
+        font-size: 16px; 
+    }
+}

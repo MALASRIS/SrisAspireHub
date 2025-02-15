@@ -3,9 +3,8 @@ const path = require("path");
 const bcrypt = require('bcryptjs');
 const collection = require("./models/config");
 const app = express();
-const PORT = 4000;
+const PORT = 3000;
 
-//mongoDb
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }));
 
@@ -84,7 +83,7 @@ app.post('/login',async (req ,res)=>{
 app.use(express.static("public"));
 app.use(express.static('views/assets'));
 app.listen(PORT, () => {
-    console.log(`Port listening on ${PORT}`);
+    console.log(`App listening on ${PORT}`);
 });
 
 app.use((req, res) => {
