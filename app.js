@@ -27,9 +27,9 @@ app.get("/resource", (req, res) => res.render("containers/resource", { title: "R
 // Signup Route
 app.post("/signup", async (req, res) => {
     try {
-      const { username, email, password } = req.body;
+      const { username, password } = req.body;
   
-      if (!username || !email || !password) {
+      if (!username || !password) {
         return res.status(400).json({ message: "All fields are required" });
       }
   
@@ -39,7 +39,7 @@ app.post("/signup", async (req, res) => {
       }
   
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({ username, email, password: hashedPassword });
+      const newUser = new User({ username,  password: hashedPassword });
   
       await newUser.save();
       res.status(201).json({ message: "Signup successful", user: newUser });
