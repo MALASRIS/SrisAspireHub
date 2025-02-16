@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 const path = require("path");
 
 dotenv.config();
@@ -12,18 +12,16 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-}).then(() => {
-    console.log("✅ MongoDB Connected Successfully");
-}).catch((error) => {
-    console.error("❌ MongoDB Connection Error:", error);
-});
+})
+.then(() => console.log("✅ MongoDB Connected Successfully"))
+.catch((error) => console.error("❌ MongoDB Connection Error:", error));
 
 // Routes
 app.get("/", (req, res) => res.render("containers/login", { title: "Login" }));
@@ -41,33 +39,31 @@ app.post('/signup', async (req, res) => {
     try {
         let { username, password } = req.body;
 
-        // Validate Input
         if (!username || !password) {
-            return res.send("<script>alert('Username and password are required'); window.location.href='/signup'</script>");
+            return res.send("<script>alert('Username and password are required'); window.location.href='/signup';</script>");
         }
 
-        username = username.trim(); // Remove leading/trailing spaces
+        username = username.trim();
         password = String(password).trim();
 
         if (password.length < 6) {
-            return res.send("<script>alert('Password must be at least 6 characters'); window.location.href='/signup'</script>");
+            return res.send("<script>alert('Password must be at least 6 characters'); window.location.href='/signup';</script>");
         }
 
         const existingUser = await collection.findOne({ name: username });
         if (existingUser) {
-            return res.send("<script>alert('Username already exists'); window.location.href='/signup'</script>");
+            return res.send("<script>alert('Username already exists'); window.location.href='/signup';</script>");
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
         const userData = new collection({ name: username, password: hashedPassword });
         await userData.save();
 
         console.log("✅ User Created:", userData);
-        res.send("<script>alert('Signed up successfully'); window.location.href='/login'</script>");
+        res.send("<script>alert('Signed up successfully'); window.location.href='/login';</script>");
     } catch (error) {
-        console.error("❌ Signup Error:", error.message);
-        res.status(500).send(`<script>alert('Signup failed: ${escape(error.message)}'); window.location.href='/signup'</script>`);
+        console.error("❌ Signup Error:", error);
+        res.status(500).send(`<script>alert('Signup failed: ${error.message.replace(/'/g, "\\'")}'); window.location.href='/signup';</script>`);
     }
 });
 
@@ -77,13 +73,13 @@ app.post('/login', async (req, res) => {
         const { username, password } = req.body;
 
         if (!username || !password) {
-            return res.send("<script>alert('Username and password are required'); window.location.href='/'</script>");
+            return res.send("<script>alert('Username and password are required'); window.location.href='/';</script>");
         }
 
         const user = await collection.findOne({ name: username });
 
         if (!user) {
-            return res.send("<script>alert('Username not found'); window.location.href='/'</script>");
+            return res.send("<script>alert('Username not found'); window.location.href='/';</script>");
         }
 
         const isPasswordMatch = await bcrypt.compare(password, user.password);
@@ -91,11 +87,11 @@ app.post('/login', async (req, res) => {
             console.log("✅ Login successful for user:", username);
             return res.redirect("/ejshome");
         } else {
-            return res.send("<script>alert('Wrong Password'); window.location.href='/'</script>");
+            return res.send("<script>alert('Wrong Password'); window.location.href='/';</script>");
         }
     } catch (error) {
-        console.error("❌ Login Error:", error.message);
-        return res.send(`<script>alert('Something went wrong: ${escape(error.message)}'); window.location.href='/'</script>`);
+        console.error("❌ Login Error:", error);
+        return res.send(`<script>alert('Something went wrong: ${error.message.replace(/'/g, "\\'")}'); window.location.href='/';</script>`);
     }
 });
 
@@ -103,12 +99,13 @@ app.post('/login', async (req, res) => {
 app.use(express.static("public"));
 app.use(express.static(path.join(__dirname, "views/assets")));
 
-// Server Setup
+// 404 Page Handler
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
+});
+
+// Start Server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-});
-
-app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
 });
