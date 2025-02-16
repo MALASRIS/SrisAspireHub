@@ -15,70 +15,47 @@ router.get("/hscGuidance", (req, res) => res.render("containers/hscGuidance", { 
 router.get("/sslcGuidance", (req, res) => res.render("containers/sslcGuidance", { title: "Career Guidance" }));
 router.get("/resource", (req, res) => res.render("containers/resource", { title: "Resources" }));
 
-// ✅ Signup Route
+// ✅ Signup Route (Fixed Security Issues)
 router.post('/signup', async (req, res) => {
     try {
-        let { username, password } = req.body;
+        let { username, password, confirmPassword, classLevel } = req.body;
 
-        if (!username || !password) {
-            return res.send("<script>alert('Username and password are required'); window.location.href='/signup'</script>");
+        if (!username || !password || !confirmPassword || !classLevel) {
+            return res.send(`<script>alert('All fields are required'); window.location.href='/signup'</script>`);
         }
 
         username = username.trim();
         password = password.trim();
+        confirmPassword = confirmPassword.trim();
+
+        if (password !== confirmPassword) {
+            return res.send(`<script>alert('Passwords do not match'); window.location.href='/signup'</script>`);
+        }
 
         if (!/^[a-zA-Z0-9._]+$/.test(username)) {
-            return res.send("<script>alert('Invalid username. Only letters, numbers, dot, and underscore allowed.'); window.location.href='/signup'</script>");
+            return res.send(`<script>alert('Invalid username. Only letters, numbers, dot, and underscore allowed.'); window.location.href='/signup'</script>`);
         }
 
         if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password)) {
-            return res.send("<script>alert('Password must be at least 6 characters, include letters and numbers'); window.location.href='/signup'</script>");
+            return res.send(`<script>alert('Password must be at least 6 characters, include letters and numbers'); window.location.href='/signup'</script>`);
         }
 
         const existingUser = await collection.findOne({ name: username });
         if (existingUser) {
-            return res.send("<script>alert('Username already exists'); window.location.href='/signup'</script>");
+            return res.send(`<script>alert('Username already exists'); window.location.href='/signup'</script>`);
         }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const userData = new collection({ name: username, password: hashedPassword });
+        const userData = new collection({ name: username, password: hashedPassword, classLevel });
         await userData.save();
 
         console.log("✅ User Created:", userData);
         res.send("<script>alert('Signed up successfully'); window.location.href='/login'</script>");
     } catch (error) {
         console.error("❌ Signup Error:", error.message);
-        res.status(500).send(`<script>alert('Signup failed: ${escape(error.message)}'); window.location.href='/signup'</script>`);
-    }
-});
-
-// ✅ Login Route
-router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        if (!username || !password) {
-            return res.send("<script>alert('Username and password are required'); window.location.href='/';</script>");
-        }
-
-        const user = await collection.findOne({ name: username });
-
-        if (!user) {
-            return res.send("<script>alert('Username not found'); window.location.href='/';</script>");
-        }
-
-        const isPasswordMatch = await bcrypt.compare(password, user.password);
-        if (isPasswordMatch) {
-            console.log("✅ Login successful for user:", username);
-            return res.redirect("/ejshome");
-        } else {
-            return res.send("<script>alert('Wrong Password'); window.location.href='/';</script>");
-        }
-    } catch (error) {
-        console.error("❌ Login Error:", error);
-        return res.send(`<script>alert('Something went wrong: ${error.message.replace(/'/g, "\\'")}'); window.location.href='/';</script>`);
+        res.status(500).send(`<script>alert('Signup failed: ${encodeURIComponent(error.message)}'); window.location.href='/signup'</script>`);
     }
 });
 
