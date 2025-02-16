@@ -34,38 +34,42 @@ app.get("/hscGuidance", (req, res) => res.render("containers/hscGuidance", { tit
 app.get("/sslcGuidance", (req, res) => res.render("containers/sslcGuidance", { title: "Career Guidance" }));
 app.get("/resource", (req, res) => res.render("containers/resource", { title: "Resources" }));
 
-// Signup Route
 app.post('/signup', async (req, res) => {
     try {
         let { username, password } = req.body;
 
+        // Validate Input
         if (!username || !password) {
-            return res.send("<script>alert('Username and password are required'); window.location.href='/signup';</script>");
+            return res.send("<script>alert('Username and password are required'); window.location.href='/signup'</script>");
         }
 
         username = username.trim();
-        password = String(password).trim();
+        password = password.trim(); // Ensure it's a string and remove spaces
 
-        if (password.length < 6) {
-            return res.send("<script>alert('Password must be at least 6 characters'); window.location.href='/signup';</script>");
+        if (typeof password !== "string" || password.length < 6) {
+            return res.send("<script>alert('Password must be at least 6 characters'); window.location.href='/signup'</script>");
         }
 
         const existingUser = await collection.findOne({ name: username });
         if (existingUser) {
-            return res.send("<script>alert('Username already exists'); window.location.href='/signup';</script>");
+            return res.send("<script>alert('Username already exists'); window.location.href='/signup'</script>");
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Generate Salt and Hash Password
+        const salt = await bcrypt.genSalt(10); // Generate a salt
+        const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
+
         const userData = new collection({ name: username, password: hashedPassword });
         await userData.save();
 
         console.log("✅ User Created:", userData);
-        res.send("<script>alert('Signed up successfully'); window.location.href='/login';</script>");
+        res.send("<script>alert('Signed up successfully'); window.location.href='/login'</script>");
     } catch (error) {
-        console.error("❌ Signup Error:", error);
-        res.status(500).send(`<script>alert('Signup failed: ${error.message.replace(/'/g, "\\'")}'); window.location.href='/signup';</script>`);
+        console.error("❌ Signup Error:", error.message);
+        res.status(500).send(`<script>alert('Signup failed: ${escape(error.message)}'); window.location.href='/signup'</script>`);
     }
 });
+
 
 // Login Route
 app.post('/login', async (req, res) => {
