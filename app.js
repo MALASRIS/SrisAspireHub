@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const path = require("path");
 
 dotenv.config();
@@ -109,7 +109,6 @@ app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// 404 Page Handler
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, "views", "404.html"));
 });
