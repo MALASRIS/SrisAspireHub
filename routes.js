@@ -1,8 +1,14 @@
 const express = require("express");
+const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const collection = require("./models/config");
 
 const router = express.Router();
+
+// ✅ Fix Crypto Issue for bcrypt
+bcrypt.setRandomFallback((len) => {
+    return crypto.randomBytes(len);
+});
 
 // ✅ Render Pages
 router.get("/", (req, res) => res.render("containers/login", { title: "Login" }));
